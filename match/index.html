@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#D7F5E3">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect x=%276%27 y=%2716%27 width=%2740%27 height=%2768%27 rx=%2710%27 fill=%27%23ff7aa2%27/%3E%3Crect x=%2754%27 y=%2716%27 width=%2740%27 height=%2768%27 rx=%2710%27 fill=%27%233a86ff%27/%3E%3C/svg%3E">
+<link rel="preload" href="../fonts/cardsans.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../play/play.css?v=3">
+<link rel="stylesheet" href="../shared/reward.css?v=4">
+<title>Match the Pairs</title>
+<style>
+  @font-face { font-family: "LetterCardsSans"; font-weight: 400 900; font-display: block; src: url(../fonts/cardsans.woff2) format("woff2"); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; touch-action: manipulation;
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+  body { background: #D7F5E3; color: #3a2e5c; font-family: "LetterCardsSans", "Andika", "Comic Sans MS", "Chalkboard SE", "Arial Rounded MT Bold", system-ui, sans-serif; font-weight: 700; transition: background-color .6s; }
+  .parent { position: fixed; top: max(env(safe-area-inset-top), 8px); z-index: 10; width: 44px; height: 44px; border-radius: 12px;
+    border: 2px solid rgba(58,46,92,.25); background: rgba(255,255,255,.45); color: #3a2e5c; font-size: 22px; line-height: 1; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; opacity: .55; cursor: pointer; touch-action: manipulation;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+  .parent:active { opacity: 1; }
+  #homeBtn { left: max(env(safe-area-inset-left), 8px); }
+  #soundBtn { right: max(env(safe-area-inset-right), 8px); }
+  #credits { position: fixed; z-index: 10; right: max(env(safe-area-inset-right), 6px); bottom: max(env(safe-area-inset-bottom), 4px);
+    font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 400; color: #3a2e5c; opacity: .35; text-decoration: none; padding: 6px; }
+  #stage { position: fixed; inset: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; align-items: center; gap: 1.5vh;
+    padding: calc(max(env(safe-area-inset-top), 6px) + 62px) max(env(safe-area-inset-right), 4vw) calc(max(env(safe-area-inset-bottom), 4px) + 24px) max(env(safe-area-inset-left), 4vw); }
+  #title { flex: none; font-size: min(5.5vh, 8vw); text-align: center; }
+  #grid { flex: 1 1 0; min-height: 0; width: 100%; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: var(--pm-gap, 16px); }
+  .mcard { width: var(--pm-cs, 40vw); height: var(--pm-cs, 40vw); flex: none; border: none; padding: 0; background: none; perspective: 900px;
+    cursor: pointer; touch-action: manipulation; animation: pmIn .45s cubic-bezier(.3,1.5,.5,1) both; -webkit-tap-highlight-color: transparent; }
+  .mcard:focus { outline: none; }
+  .mcard.ready { animation: none; }
+  .mflip { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.3,1.3,.5,1); }
+  .mcard.up .mflip { transform: rotateY(180deg); }
+  .mface { position: absolute; inset: 0; border-radius: min(5vh, 7vw); overflow: hidden; -webkit-backface-visibility: hidden; backface-visibility: hidden;
+    box-shadow: 0 1vh 0 rgba(58,46,92,.16), 0 1.6vh 2.4vh rgba(58,46,92,.14); }
+  .mback { background: #ff7aa2; background-image: radial-gradient(circle at 25% 25%, rgba(255,255,255,.35) 0 9%, transparent 10%), radial-gradient(circle at 75% 70%, rgba(255,255,255,.25) 0 7%, transparent 8%), radial-gradient(circle at 80% 20%, rgba(255,255,255,.2) 0 5%, transparent 6%);
+    border: min(1.4vh, 2vw) solid #fff; display: flex; align-items: center; justify-content: center; }
+  .mback svg { width: 46%; height: 46%; filter: drop-shadow(0 3px 0 rgba(0,0,0,.15)); }
+  .mfront { transform: rotateY(180deg); background: #fff; padding: min(1.4vh, 2vw); }
+  .mfront img { width: 100%; height: 100%; object-fit: cover; border-radius: min(3.6vh, 5vw); display: block; pointer-events: none; -webkit-user-drag: none; background: #f3f0f7; }
+  .mcard.matched .mface { box-shadow: 0 0 0 6px #ffd23f, 0 1.6vh 3vh rgba(58,46,92,.3); }
+  .mcard.matched .mflip { animation: mJoy .8s cubic-bezier(.3,1.6,.5,1); }
+  .mcard.nope .mflip { animation: none; }
+  @keyframes mJoy { 0% { transform: rotateY(180deg) scale(1); } 40% { transform: rotateY(180deg) scale(1.12) rotate(4deg); } 100% { transform: rotateY(180deg) scale(1); } }
+  #pairs { flex: none; display: flex; gap: 10px; min-height: 22px; }
+  #pairs i { width: 20px; height: 20px; border-radius: 50%; background: rgba(58,46,92,.15); transition: background-color .3s, transform .3s; }
+  #pairs i.on { background: #ffbe0b; transform: scale(1.2); }
+  @media (orientation: landscape) { #title { font-size: min(6vh, 4vw); } }
+  @media (prefers-reduced-motion: reduce) { .mflip { transition: none; } .mcard, .mcard.matched .mflip { animation: none; } }
+</style>
+</head>
+<body>
+<a id="homeBtn" class="parent" href="../games.html" aria-label="All games" title="All games">&#x1F3E0;</a>
+<button id="soundBtn" class="parent" type="button" aria-label="Sound on" title="Sound on/off">&#x1F50A;</button>
+<main id="stage">
+  <div id="title">Find the pairs!</div>
+  <div id="grid" aria-label="Memory cards"></div>
+  <div id="pairs" aria-hidden="true"></div>
+</main>
+<a id="credits" href="credits.html">Photo credits</a>
+<script src="../play/play.js?v=3"></script>
+<script src="../shared/reward.js?v=4"></script>
+<script>
+(function () {
+  "use strict";
+  var P = window.PLAY, R = P.root;
+  var SKEY = "mfc-sound";
+  P.init({ game: "match", soundKey: SKEY, modes: [] });
+  var elGrid = document.getElementById("grid"), elPairs = document.getElementById("pairs"), elSound = document.getElementById("soundBtn");
+  var elTitle = document.getElementById("title");
+  // Picture pool: animal photos + the color photos (each says its name when flipped)
+  var POOL = P.ANIMAL_IDS.map(function (a) { return { id: a, img: R + "img/" + a + ".jpg?v=1", clip: R + "audio/name/" + a + ".mp3" }; });
+  var COL = { red: 0, orange: 0, yellow: "duck", green: 0, blue: "frog", purple: 0, pink: 0, brown: "bear", black: "cat", white: 0, gray: "elephant" };
+  Object.keys(COL).forEach(function (c) { POOL.push({ id: "c-" + c, img: R + "colors/img/" + c + ".jpg", clip: R + "colors/audio/name/" + c + ".mp3", avoid: COL[c] || null }); });
+  var BGS = ["#D7F5E3", "#FFE0EA", "#D9E6FF", "#FFF1C4", "#EEDDFF", "#FFE9CC"];
+  var st = P.loadJSON("play-match", null) || {}; st.pairs = st.pairs === 3 ? 3 : 2; st.wins = st.wins || 0;
+  var cards = [], open = [], matched = 0, lastTap = 0, lock = false, roundNo = 0, winTimer = null;
+
+  var soundOn = P.load(SKEY) !== "off";
+  function renderSound() { elSound.innerHTML = soundOn ? "&#x1F50A;" : "&#x1F507;"; elSound.setAttribute("aria-label", soundOn ? "Sound on" : "Sound off"); }
+  renderSound();
+  elSound.addEventListener("click", function (e) { e.stopPropagation(); soundOn = !soundOn; P.store(SKEY, soundOn ? "on" : "off"); if (!soundOn) P.stop(); renderSound(); elSound.blur(); });
+
+  var BACK = '<svg viewBox="0 0 100 100"><path d="M50 6l12.4 26.6 29 3.4-21.6 19.8 5.8 28.7L50 70.1 24.4 84.5l5.8-28.7L8.6 36l29-3.4z" fill="#fff"/></svg>';
+  function pick(n) {
+    var chosen = [], ids = {};
+    P.shuffle(POOL.slice()).forEach(function (p) {
+      if (chosen.length >= n) return;
+      if (p.avoid && ids[p.avoid]) return;
+      if (chosen.some(function (q) { return q.avoid === p.id; })) return;
+      chosen.push(p); ids[p.id] = 1;
+    });
+    return chosen;
+  }
+  function layout() { P.fitGrid(elGrid, cards.length, null); }
+  function renderPairs() {
+    elPairs.innerHTML = "";
+    for (var i = 0; i < st.pairs; i++) P.mk("i", i < matched ? "on" : "", elPairs);
+  }
+  function deal() {
+    clearTimeout(winTimer);
+    roundNo++;
+    document.body.style.backgroundColor = BGS[roundNo % BGS.length];
+    var items = pick(st.pairs);
+    var deck = P.shuffle(items.concat(items).map(function (it) { return { it: it }; }));
+    open = []; matched = 0; lock = false; cards = [];
+    elGrid.innerHTML = "";
+    elTitle.textContent = "Find the pairs!";
+    deck.forEach(function (d, i) {
+      var b = P.mk("button", "mcard", elGrid);
+      b.type = "button"; b.setAttribute("aria-label", "Card " + (i + 1));
+      b.style.animationDelay = (i * 0.06) + "s";
+      b.innerHTML = '<div class="mflip"><div class="mface mback">' + BACK + '</div><div class="mface mfront"><img alt="" draggable="false" src="' + d.it.img + '"></div></div>';
+      d.el = b;
+      b.addEventListener("click", function (e) { e.stopPropagation(); tap(d); });
+      setTimeout(function () { b.classList.add("ready"); b.style.animationDelay = ""; }, 600 + i * 60);
+      cards.push(d);
+    });
+    P.warm(items.map(function (x) { return x.clip; }).concat([R + "play/audio/match.mp3", R + "play/audio/matchwin.mp3"]));
+    renderPairs();
+    layout(); requestAnimationFrame(layout);
+  }
+  function tap(d) {
+    var now = Date.now();
+    if (now - lastTap < 500) return;
+    if (d.done || d.up) { lastTap = now; P.playSeq([d.it.clip], null, 0); return; }   // hear it again
+    if (lock) return;
+    lastTap = now;
+    d.up = true; d.el.classList.add("up");
+    open.push(d);
+    if (open.length === 1) { P.playSeq([d.it.clip], null, 0); return; }
+    var a = open[0], b = open[1];
+    open = [];
+    if (a.it.id === b.it.id) {
+      a.done = b.done = true; matched++;
+      var last = matched === st.pairs;
+      lock = true;   // short pause so the "It's a match!" cheer is heard
+      P.playSeq([b.it.clip, R + "play/audio/match.mp3"].concat(last ? [R + "play/audio/matchwin.mp3"] : []), last ? win : function () { lock = false; }, 1200);
+      if (!last) setTimeout(function () { lock = false; }, 2600);
+      setTimeout(function () {
+        [a, b].forEach(function (x) { x.el.classList.add("matched"); });
+        var c1 = P.center(a.el), c2 = P.center(b.el);
+        P.confetti(c1[0], c1[1]); setTimeout(function () { P.confetti(c2[0], c2[1]); }, 150);
+        if (!last && window.REWARD) window.REWARD.mini((c1[0] + c2[0]) / 2, (c1[1] + c2[1]) / 2);   // light sparkle per pair
+        renderPairs();
+      }, 450);
+    } else {
+      lock = true;
+      P.playSeq([b.it.clip], null, 0);
+      setTimeout(function () {
+        [a, b].forEach(function (x) { x.up = false; x.el.classList.remove("up"); });
+        lock = false;
+      }, 1500);
+    }
+  }
+  function win() {
+    st.wins++;
+    var from = st.pairs;
+    if (st.pairs < 3) st.pairs = 3;
+    P.saveJSON("play-match", st);
+    var winAnimal = (P.rnd(cards.filter(function (c) { return c.it.id.indexOf("c-") !== 0; })) || { it: { id: "cat" } }).it.id;
+    P.earnSticker("a:" + winAnimal, elGrid);
+    elTitle.textContent = "You did it!";
+    P.confetti(); setTimeout(function () { P.confetti(innerWidth * .3, innerHeight * .35); }, 300);
+    winTimer = setTimeout(function () { P.afterCorrect({ animal: winAnimal, mode: "match" }, showWin); }, 1400);
+    function showWin() {
+      P.overlay(function (ov) {
+        ov.id = "matchWin";
+        P.mk("h2", "", ov, "You matched them all!");
+        var go = P.mk("button", "pm-go", ov, P.ICON.play); go.type = "button"; go.setAttribute("aria-label", "Play again");
+        P.mk("div", "", ov, from < st.pairs ? "Next: " + (st.pairs * 2) + " cards!" : "Play again!").style.fontSize = "min(5vh, 7vw)";
+      }, deal);
+    }
+  }
+  window.addEventListener("resize", layout);
+  ["gesturestart", "gesturechange", "gestureend"].forEach(function (n) { document.addEventListener(n, function (e) { e.preventDefault(); }, { passive: false }); });
+  document.addEventListener("touchmove", function (e) { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
+  document.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  document.addEventListener("dblclick", function (e) { e.preventDefault(); });
+  window.__match = { cards: function () { return cards; }, state: function () { return { pairs: st.pairs, wins: st.wins, matched: matched, lock: lock }; } };
+  deal();
+})();
+</script>
+</body>
+</html>

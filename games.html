@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FFE08A">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect x=%274%27 y=%274%27 width=%2744%27 height=%2744%27 rx=%2710%27 fill=%27%23ff7aa2%27/%3E%3Crect x=%2752%27 y=%274%27 width=%2744%27 height=%2744%27 rx=%2710%27 fill=%27%23ffbe0b%27/%3E%3Crect x=%274%27 y=%2752%27 width=%2744%27 height=%2744%27 rx=%2710%27 fill=%27%233a86ff%27/%3E%3Crect x=%2752%27 y=%2752%27 width=%2744%27 height=%2744%27 rx=%2710%27 fill=%27%2306d6a0%27/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/cardsans.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="play/play.css">
+<title>Flash Card Games</title>
+<style>
+  @font-face { font-family: "LetterCardsSans"; font-weight: 400 900; font-display: swap; src: url(fonts/cardsans.woff2) format("woff2"); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-text-size-adjust: 100%; }
+  body {
+    background: #FFE08A; color: #3a2e5c;
+    font-family: "LetterCardsSans", "Andika", "Comic Sans MS", "Chalkboard SE", "Arial Rounded MT Bold", system-ui, sans-serif;
+    font-weight: 700;
+    padding: max(env(safe-area-inset-top), 3vh) max(env(safe-area-inset-right), 4vw) max(env(safe-area-inset-bottom), 3vh) max(env(safe-area-inset-left), 4vw);
+    min-height: 100vh; min-height: 100dvh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3vh;
+  }
+  h1 { font-size: min(9vw, 6vh); text-align: center; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: min(4vw, 3vh); width: min(92vw, 70vh); }
+  a.tile {
+    display: flex; flex-direction: column; align-items: center; gap: 1vh;
+    text-decoration: none; color: #3a2e5c;
+    background: #fff; border-radius: min(6vw, 3.5vh); padding: min(3vw, 1.6vh);
+    box-shadow: 0 1vh 0 rgba(58,46,92,.16);
+    transition: transform .1s, box-shadow .1s;
+  }
+  a.tile:active { transform: translateY(.8vh); box-shadow: 0 .2vh 0 rgba(58,46,92,.16); }
+  a.tile img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: min(4.5vw, 2.6vh); background: #f3f0f7; pointer-events: none; }
+  a.tile span { font-size: min(7vw, 4.6vh); }
+  a.tile .art { width: 100%; aspect-ratio: 1/1; border-radius: min(4.5vw, 2.6vh); position: relative; overflow: hidden; }
+  .art.pair { background: #fff; }
+  .art.pair img { position: absolute; width: 58%; height: 72%; aspect-ratio: auto; top: 14%; border: 4px solid #fff; border-radius: 12px; box-shadow: 0 4px 8px rgba(58,46,92,.3); }
+  .art.pair img:first-child { left: 4%; transform: rotate(-9deg); }
+  .art.pair img:last-child { right: 4%; transform: rotate(8deg); }
+  .art.stk { background: #FFF4C7; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; padding: 8%; gap: 6%; }
+  .art.stk > span { transform: rotate(-8deg); } .art.stk > span:nth-child(2) { transform: rotate(10deg); } .art.stk > span:nth-child(3) { transform: rotate(6deg); }
+  a.tile { position: relative; }
+  a.tile span b { position: absolute; top: -8px; right: -8px; min-width: 1.8em; font-size: min(5vw, 3.2vh); line-height: 1.8; text-align: center; background: #ffd23f; border: 3px solid #fff; border-radius: 999px; padding: 0 .35em; box-shadow: 0 3px 0 rgba(58,46,92,.2); }
+  a.tile span b:empty { display: none; }
+  .t5 { background: #D7F5E3 !important; } .t6 { background: #FFE9CC !important; }
+  .t1 { background: #FFC8DD !important; } .t2 { background: #BDE0FE !important; } .t3 { background: #CDEAC0 !important; } .t4 { background: #E2CFFF !important; }
+  @media (orientation: landscape) and (min-aspect-ratio: 5/4) {
+    .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(94vw, 95vh); }
+    h1 { font-size: min(7vh, 5vw); }
+  }
+  @media (orientation: landscape) and (min-aspect-ratio: 19/10) {
+    .grid { grid-template-columns: repeat(6, minmax(0, 1fr)); width: min(96vw, 200vh); }
+    a.tile span { font-size: min(4.6vh, 2.6vw); }
+  }
+</style>
+</head>
+<body>
+<h1>Pick a game!</h1>
+<nav class="grid">
+  <a class="tile t1" href="./"><img src="img/dog.jpg" alt=""><span>Animals</span></a>
+  <a class="tile t2" href="letters/"><img src="letters/img/a.jpg" alt=""><span>Letters</span></a>
+  <a class="tile t3" href="colors/"><img src="colors/img/red.jpg" alt=""><span>Colors</span></a>
+  <a class="tile t4" href="days/"><img src="days/img/sunday.jpg" alt=""><span>Days</span></a>
+  <a class="tile t5" href="match/"><div class="art pair"><img src="img/cat.jpg" alt=""><img src="img/cat.jpg" alt=""></div><span>Match</span></a>
+  <a class="tile t6" href="stickers/"><div class="art stk" id="stkArt"></div><span>Stickers <b id="stkN"></b></span></a>
+</nav>
+<script src="play/play.js"></script>
+<script>
+  (function () {
+    var P = window.PLAY, list = P.stickers(), art = document.getElementById("stkArt");
+    var show = list.slice(-4).map(function (s) { return s.s; });
+    var defaults = ["s:star:ffbe0b", "s:heart:ff5d8f", "a:dog", "s:flower:8338ec"];
+    while (show.length < 4) show.push(defaults[show.length]);
+    art.innerHTML = show.map(P.stickerHTML).join("");
+    document.getElementById("stkN").textContent = list.length ? String(list.length) : "";
+  })();
+  ["gesturestart", "gesturechange", "gestureend"].forEach(function (n) { document.addEventListener(n, function (e) { e.preventDefault(); }, { passive: false }); });
+  document.addEventListener("dblclick", function (e) { e.preventDefault(); });
+</script>
+</body>
+</html>

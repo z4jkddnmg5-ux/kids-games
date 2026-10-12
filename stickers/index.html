@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FFF4C7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cpath d=%27M16 2.5l4 8.6 9.4 1.1-7 6.4 1.9 9.3L16 23.2l-8.3 4.7 1.9-9.3-7-6.4 9.4-1.1z%27 fill=%27%23ffd23f%27 stroke=%27%23c98a00%27 stroke-width=%272%27/%3E%3C/svg%3E">
+<link rel="preload" href="../fonts/cardsans.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../play/play.css?v=3">
+<link rel="stylesheet" href="../shared/reward.css?v=4">
+<title>My Sticker Book</title>
+<style>
+  @font-face { font-family: "LetterCardsSans"; font-weight: 400 900; font-display: swap; src: url(../fonts/cardsans.woff2) format("woff2"); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-text-size-adjust: 100%; }
+  body { background: #FFF4C7; background-image: radial-gradient(rgba(58,46,92,.08) 1.5px, transparent 1.6px); background-size: 22px 22px;
+    color: #3a2e5c; font-family: "LetterCardsSans", "Andika", "Comic Sans MS", "Chalkboard SE", "Arial Rounded MT Bold", system-ui, sans-serif; font-weight: 700;
+    padding: calc(max(env(safe-area-inset-top), 8px) + 8px) max(env(safe-area-inset-right), 4vw) calc(max(env(safe-area-inset-bottom), 8px) + 16px) max(env(safe-area-inset-left), 4vw); }
+  .parent { position: fixed; top: max(env(safe-area-inset-top), 8px); z-index: 10; width: 44px; height: 44px; border-radius: 12px;
+    border: 2px solid rgba(58,46,92,.25); background: rgba(255,255,255,.7); color: #3a2e5c; font-size: 22px; line-height: 1; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+  #backBtn { left: max(env(safe-area-inset-left), 8px); }
+  #homeBtn { right: calc(max(env(safe-area-inset-right), 8px) + 52px); }
+  #soundBtn { right: max(env(safe-area-inset-right), 8px); }
+  header { text-align: center; padding: 4px 96px 2vh 56px; }
+  h1 { font-size: min(9vw, 6vh); line-height: 1.1; }
+  #count { display: inline-flex; align-items: center; gap: 8px; margin-top: 1vh; font-size: min(7vw, 4.5vh); background: #fff; border-radius: 999px; padding: 4px 18px 4px 8px; box-shadow: 0 4px 0 rgba(58,46,92,.15); }
+  #count svg { width: 1.3em; height: 1.3em; }
+  #book { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(24vw, 120px), 1fr)); gap: min(4vw, 24px); padding: 2vh 0; max-width: 1100px; margin: 0 auto; }
+  .sk { aspect-ratio: 1 / 1; border: none; background: none; padding: 6%; cursor: pointer; touch-action: manipulation; animation: pmIn .45s cubic-bezier(.3,1.5,.5,1) both; }
+  .sk > .pm-stk { transform: rotate(var(--r, 0deg)); transition: transform .2s; }
+  .sk.hop > .pm-stk { animation: pmRight .7s cubic-bezier(.3,1.6,.5,1); }
+  .sk:focus { outline: none; }
+  #empty { text-align: center; font-size: min(6vw, 4vh); padding: 4vh 4vw; line-height: 1.3; }
+  #empty .big { width: min(40vw, 26vh); height: min(40vw, 26vh); margin: 2vh auto; }
+  #empty a { color: #3a2e5c; }
+  #stats { text-align: center; font-family: system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 500; opacity: .6; padding: 1vh 0; }
+  #reset { display: block; margin: 1vh auto 0; font-family: system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 400; color: #3a2e5c; opacity: .45; background: none; border: none; text-decoration: underline; cursor: pointer; padding: 8px; }
+</style>
+</head>
+<body>
+<a id="backBtn" class="parent" href="../games.html" aria-label="Back" title="Back">&#x2B05;&#xFE0F;</a>
+<a id="homeBtn" class="parent" href="../games.html" aria-label="All games" title="All games">&#x1F3E0;</a>
+<button id="soundBtn" class="parent" type="button" aria-label="Sound on" title="Sound on/off">&#x1F50A;</button>
+<header>
+  <h1>My stickers</h1>
+  <div id="count"></div>
+</header>
+<main id="book" aria-label="Stickers"></main>
+<div id="empty" hidden></div>
+<div id="stats"></div>
+<div id="rwSet" class="rw-set" role="group" aria-label="Parents: rewards after answers">
+  <div class="lbl">Parents: fun reward after answers</div>
+  <div class="seg"><button type="button" data-v="every">Every answer</button><button type="button" data-v="3">Every 3 answers</button><button type="button" data-v="off">Off (stickers only)</button></div>
+</div>
+<button id="reset" type="button">Parents: clear all stickers</button>
+<p style="text-align:center;font:11px system-ui,sans-serif;opacity:.45;padding:6px"><a href="../credits.html" style="color:#3a2e5c">Photo credits</a></p>
+<script src="../play/play.js?v=3"></script>
+<script src="../shared/reward.js?v=4"></script>
+<script>
+(function () {
+  "use strict";
+  var P = window.PLAY, R = P.root, SKEY = "sfc-sound";
+  var elBook = document.getElementById("book"), elCount = document.getElementById("count"), elEmpty = document.getElementById("empty");
+  var elStats = document.getElementById("stats"), elBack = document.getElementById("backBtn"), elSound = document.getElementById("soundBtn");
+  // Back goes to the game we came from (same site only)
+  var from = null;
+  try { from = new URLSearchParams(location.search).get("from"); } catch (e) {}
+  if (from && /^\/[^\/]/.test(from) && from.indexOf("//") < 0) elBack.href = from;
+  var soundOn = P.load(SKEY) !== "off";
+  function renderSound() { elSound.innerHTML = soundOn ? "&#x1F50A;" : "&#x1F507;"; }
+  renderSound();
+  var NAMES = { animals: "Animals", letters: "Letters", colors: "Colors", days: "Days", match: "Match" };
+  function render() {
+    var list = P.stickers();
+    elCount.innerHTML = P.ICON.star + "<span>" + list.length + "</span>";
+    elBook.innerHTML = "";
+    elEmpty.hidden = list.length > 0;
+    if (!list.length) {
+      elEmpty.innerHTML = '<div class="big">' + P.stickerHTML("s:star:ffbe0b") + '</div>No stickers yet!<br>Play <b>Find it</b> or <b>Match</b> to earn stickers.<br><br><a href="../games.html">Pick a game</a>';
+    }
+    var shown = list.slice().reverse().slice(0, 400);
+    shown.forEach(function (s, i) {
+      var b = P.mk("button", "sk" + (s.prize ? " prize" : ""), elBook, P.stickerHTML(s.s));
+      b.type = "button";
+      b.style.setProperty("--r", (((i * 37) % 21) - 10) + "deg");
+      b.style.animationDelay = Math.min(i, 30) * 0.035 + "s";
+      b.setAttribute("aria-label", "Sticker");
+      b.addEventListener("click", function () {
+        b.classList.remove("hop"); void b.offsetWidth; b.classList.add("hop");
+        var p = String(s.s).split(":");
+        if (soundOn && p[0] === "a") P.playSeq([R + "audio/name/" + p[1] + ".mp3"], null, 0);
+        else if (soundOn && p[0] === "p" && p[1] === "a") P.playSeq([R + "audio/name/" + p[2] + ".mp3"], null, 0);
+      });
+    });
+    var by = {};
+    var prizes = 0;
+    list.forEach(function (s) { if (s.prize) prizes++; else by[s.g] = (by[s.g] || 0) + 1; });
+    elStats.textContent = Object.keys(by).map(function (g) { return (NAMES[g] || g) + " " + by[g]; }).concat(prizes ? ["Prizes " + prizes] : []).join("  \u00B7  ");
+    document.getElementById("reset").hidden = !list.length;
+  }
+  elSound.addEventListener("click", function () { soundOn = !soundOn; P.store(SKEY, soundOn ? "on" : "off"); if (!soundOn) P.stop(); renderSound(); });
+  document.getElementById("reset").addEventListener("click", function () {
+    if (window.confirm("Clear ALL stickers from the sticker book? This cannot be undone.")) { P.saveJSON("play-stickers", []); render(); }
+  });
+  // Parent setting: how often the fun reward shows (shared/reward.js)
+  var rwBtns = document.querySelectorAll("#rwSet button");
+  function renderRw() { var m = window.REWARD ? window.REWARD.getMode() : "every"; Array.prototype.forEach.call(rwBtns, function (b) { b.classList.toggle("on", b.dataset.v === m); b.setAttribute("aria-pressed", b.dataset.v === m ? "true" : "false"); }); }
+  Array.prototype.forEach.call(rwBtns, function (b) { b.addEventListener("click", function () { if (window.REWARD) window.REWARD.setMode(b.dataset.v); renderRw(); b.blur(); }); });
+  if (!window.REWARD) document.getElementById("rwSet").hidden = true;
+  renderRw();
+  window.addEventListener("pageshow", function () { render(); renderRw(); });
+  window.addEventListener("storage", function (e) { if (e.key === "play-stickers") render(); });
+  ["gesturestart", "gesturechange", "gestureend"].forEach(function (n) { document.addEventListener(n, function (e) { e.preventDefault(); }, { passive: false }); });
+  document.addEventListener("dblclick", function (e) { e.preventDefault(); });
+  render();
+})();
+</script>
+</body>
+</html>
